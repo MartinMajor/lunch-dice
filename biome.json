@@ -1,0 +1,79 @@
+{
+	"$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
+	"formatter": {
+		"indentStyle": "space",
+		"lineWidth": 100
+	},
+	"javascript": {
+		"formatter": {
+			"bracketSameLine": false,
+			"bracketSpacing": true,
+			"jsxQuoteStyle": "single",
+			"quoteProperties": "asNeeded",
+			"quoteStyle": "single",
+			"semicolons": "always",
+			"trailingCommas": "es5"
+		}
+	},
+	"organizeImports": {
+		"enabled": true
+	},
+	"linter": {
+		"rules": {
+			"a11y": {
+				"noSvgWithoutTitle": "off",
+				"useKeyWithClickEvents": "off",
+				"useAnchorContent": "off"
+			},
+			"complexity": {
+				"noBannedTypes": "warn",
+				"noForEach": "off",
+				"noStaticOnlyClass": "off",
+				"noThisInStatic": "warn",
+				"noUselessConstructor": "warn",
+				"noUselessThisAlias": "off",
+				"useFlatMap": "warn",
+				"useSimplifiedLogicExpression": "warn"
+			},
+			"correctness": {
+				"noConstAssign": "error",
+				"noUnusedVariables": "warn",
+				"useValidForDirection": "error",
+				"useYield": "off"
+			},
+			"performance": {
+				"noAccumulatingSpread": "off",
+				"noDelete": "error"
+			},
+			"style": {
+				"useImportType": "off",
+				"useExportType": "warn",
+				"useForOf": "warn",
+				"useNodejsImportProtocol": "warn",
+				"useNumberNamespace": "warn",
+				"noInferrableTypes": "warn",
+				"noNegationElse": "off",
+				"noNonNullAssertion": "error",
+				"noUselessElse": "warn",
+				"useBlockStatements": "warn",
+				"useFragmentSyntax": "warn",
+				"useShorthandArrayType": "warn",
+				"useSingleCaseStatement": "off"
+			},
+			"suspicious": {
+				"useAwait": "warn",
+				"noArrayIndexKey": "off",
+				"noAssignInExpressions": "error",
+				"noConfusingVoidType": "warn",
+				"noExplicitAny": "error",
+				"noPrototypeBuiltins": "off",
+				"useIsArray": "warn"
+			}
+		}
+	},
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	}
+}

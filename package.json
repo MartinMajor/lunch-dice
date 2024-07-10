@@ -3,26 +3,29 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
     "build": "next build",
+    "dev": "next dev",
+    "format-and-lint": "biome lint ./src --error-on-warnings",
+    "format-and-lint:apply": "biome lint ./src --write --error-on-warnings",
+    "lint": "next lint",
     "start": "next start",
-    "lint": "next lint"
+    "validate": "tsc --noEmit"
   },
   "dependencies": {
-    "@types/node": "20.4.9",
-    "@types/react": "18.2.20",
-    "@types/react-dom": "18.2.7",
-    "autoprefixer": "10.4.14",
-    "eslint": "8.46.0",
-    "eslint-config-next": "13.4.13",
-    "next": "13.4.13",
-    "postcss": "8.4.27",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "tailwindcss": "3.3.3",
-    "typescript": "5.1.6"
+    "next": "14.2.4",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   },
   "devDependencies": {
-    "mini-css-extract-plugin": "2.7.6"
-  }
+    "@biomejs/biome": "1.8.3",
+    "@types/node": "20.14.10",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "autoprefixer": "10.4.19",
+    "mini-css-extract-plugin": "2.9.0",
+    "postcss": "8.4.39",
+    "tailwindcss": "3.4.4",
+    "typescript": "5.5.3"
+  },
+  "packageManager": "pnpm@9.5.0"
 }
