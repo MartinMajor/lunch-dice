@@ -1,3 +1,5 @@
+import { NormalizedPrice } from '@/app/NormalizedPrice';
+
 const oneStepIterations = 3_000_000;
 const optimizationIterations = 7;
 
@@ -27,7 +29,7 @@ function oneStep(initials: number[], sum: number) {
   return sums.map((n) => n / oneStepIterations);
 }
 
-function improve(initials: number[], result: number[], wanted: number[]) {
+function improve(initials: number[], result: number[], wanted: readonly number[]) {
   const results = [];
 
   for (let i = 0; i < initials.length; i++) {
@@ -37,14 +39,14 @@ function improve(initials: number[], result: number[], wanted: number[]) {
   return results;
 }
 
-export function simulation(prices: number[]) {
+export function computeNormalizedPrices(prices: readonly number[]): NormalizedPrice[] {
   const sum = prices.reduce((a, b) => a + b);
-  let initials = prices;
+  let initials = Array.from(prices);
 
   for (let i = 0; i < optimizationIterations; i++) {
     const result = oneStep(initials, sum);
     initials = improve(initials, result, prices);
   }
 
-  return initials;
+  return initials.map(NormalizedPrice);
 }
