@@ -1,0 +1,43 @@
+@keyframes init-animation {
+  0% {
+    translate: 0 1lh;
+  }
+}
+
+.NumericDisplay__Digit {
+  text-align: center;
+  max-width: 1em;
+  transition-property: translate, max-width;
+  transition-duration: calc(var(--digit-transition-duration, 0s)), 300ms;
+  transition-timing-function: ease-in-out, linear;
+  transition-delay: var(--digit-transition-delay, 0s), 0ms;
+  animation-name: init-animation;
+  animation-duration: calc(var(--digit-transition-duration, 0s));
+  animation-timing-function: ease-in-out;
+  animation-fill-mode: backwards;
+  animation-delay: calc(var(--digit-transition-delay, 0s));
+  animation-play-state: var(--common-animation-play-state, running); // This custom property should be set after loading all page assets (fonts, images, etc.)
+  translate: 0 1lh;
+
+  @for $i from 0 through 9 {
+
+    // 0 through 9, because we have 10 numbers
+    &[data-shift-index='#{$i}'] {
+      translate: 0 -#{$i}lh;
+    }
+  }
+
+  @starting-style {
+    max-width: 0;
+  }
+
+  &[data-shift-index=''] {
+    transition-delay: var(--digit-transition-delay, 0s), calc(var(--digit-transition-duration, 0s));
+    translate: 0 1lh;
+    max-width: 0;
+  }
+
+  >* {
+    flex-shrink: 0;
+  }
+}

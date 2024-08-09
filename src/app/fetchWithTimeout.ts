@@ -1,20 +1,21 @@
-// adds option timeout (in ms)
-async function fetchWithTimeout(
-  resource: RequestInfo | URL,
-  options: Partial<RequestInit> & { timeout?: number } = {}
+type Fetch = Parameters<typeof fetch>;
+type FetchInput = Fetch[0];
+type FetchInit = Omit<NonNullable<Fetch[1]>, 'signal'>;
+
+export async function fetchWithTimeout(
+  input: FetchInput,
+  init: FetchInit & { timeout?: number } = {}
 ) {
-  const { timeout = 10000 } = options;
+  const { timeout = 10_000, ...requestInit } = init;
 
   const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
+  const timerId = window.setTimeout(() => controller.abort('Request timed out'), timeout);
 
-  const response = await fetch(resource, {
-    ...options,
+  const response = await fetch(input, {
+    ...requestInit,
     signal: controller.signal,
   });
-  clearTimeout(id);
 
+  window.clearTimeout(timerId);
   return response;
 }
-
-export default fetchWithTimeout;

@@ -1,10 +1,10 @@
-import React from 'react';
+import * as React from 'react';
 import OnlineSwitcher from '../OnlineSwitcher/OnlineSwitcher';
 
-function Header({ stateHandler }: { stateHandler: (state: boolean) => void }) {
+export function Header({ stateHandler }: { stateHandler: (state: boolean) => void }) {
   return (
     <header className='sticky top-0 z-50 flex flex-none flex-wrap items-center justify-between bg-white px-4 py-1 shadow-md shadow-slate-900/5 sm:px-6 lg:px-8'>
-      <a aria-label='Home page' href='/' className='text-xl font-light font-sans'>
+      <a aria-label='Home page' href='/' className='font-light font-sans text-xl'>
         Lunch Dice
       </a>
 
@@ -27,5 +27,3 @@ function Header({ stateHandler }: { stateHandler: (state: boolean) => void }) {
     </header>
   );
 }
-
-export default Header;
