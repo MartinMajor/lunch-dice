@@ -20,7 +20,11 @@
 	},
 	"linter": {
 		"rules": {
+			"nursery": {
+				"useSortedClasses": "info"
+			},
 			"a11y": {
+				"noAutofocus": "off",
 				"noSvgWithoutTitle": "off",
 				"useKeyWithClickEvents": "off",
 				"useAnchorContent": "off"
