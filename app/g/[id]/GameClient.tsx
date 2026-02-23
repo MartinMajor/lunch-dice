@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocalGroups } from "@/hooks/useLocalGroups";
+import { computeScore } from "@/lib/algorithm";
 import Header from "@/components/Header";
 import PlayerCard from "@/components/PlayerCard";
 import AddPlayerPicker from "@/components/AddPlayerPicker";
+import RollingCard, { RollState } from "@/components/RollingCard";
 import { GamePhase, RosterPlayer, SessionPlayer } from "@/types/game";
 
 interface Props {
@@ -24,13 +26,12 @@ export default function GameClient({ group, initialRoster }: Props) {
     addGroup(group.id, group.name);
   }, [group.id, group.name, addGroup]);
 
-  // Compute probabilities from valid prices
+  // ── Setup helpers ─────────────────────────────────────────────────────────
+
   const prices = sessionPlayers.map((p) => parseFloat(p.price) || 0);
   const total = prices.reduce((a, b) => a + b, 0);
   const probabilities = prices.map((p) => (total > 0 ? p / total : 0));
-
-  const validCount = prices.filter((p) => p > 0).length;
-  const canStart = validCount >= 2;
+  const canStart = prices.filter((p) => p > 0).length >= 2;
 
   function updatePrice(playerId: string, value: string) {
     setSessionPlayers((prev) =>
@@ -67,12 +68,66 @@ export default function GameClient({ group, initialRoster }: Props) {
     setShowPicker(false);
   }
 
-  function startRolling() {
-    if (!canStart) return;
-    setPhase("rolling");
+  // ── Rolling helpers ───────────────────────────────────────────────────────
+
+  function rollPlayer(playerId: string) {
+    const face = Math.floor(Math.random() * 6) + 1;
+    const player = sessionPlayers.find((p) => p.playerId === playerId)!;
+    const score = computeScore(parseFloat(player.price));
+
+    setSessionPlayers((prev) =>
+      prev.map((p) =>
+        p.playerId === playerId
+          ? { ...p, dieFace: face, rolledScore: score, isRolling: true }
+          : p
+      )
+    );
   }
 
-  // ── Setup phase ──────────────────────────────────────────────────────────
+  const saveSession = useCallback(
+    (players: SessionPlayer[]) => {
+      fetch(`/api/groups/${group.id}/sessions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          players: players.map((p) => ({
+            playerId: p.playerId,
+            price: parseFloat(p.price),
+            rolledScore: p.rolledScore!,
+          })),
+        }),
+      });
+    },
+    [group.id]
+  );
+
+  function onDieComplete(playerId: string) {
+    setSessionPlayers((prev) => {
+      const updated = prev.map((p) =>
+        p.playerId === playerId ? { ...p, isRolling: false } : p
+      );
+      const allDone = updated.every((p) => p.rolledScore !== undefined && !p.isRolling);
+      if (allDone) {
+        setTimeout(() => setPhase("complete"), 600);
+        saveSession(updated);
+      }
+      return updated;
+    });
+  }
+
+  function getRollState(player: SessionPlayer): RollState {
+    if (player.isRolling) return "rolling";
+    if (player.rolledScore === undefined) return "waiting";
+    // Among players who have rolled, find the minimum score
+    const rolledScores = sessionPlayers
+      .filter((p) => p.rolledScore !== undefined && !p.isRolling)
+      .map((p) => p.rolledScore!);
+    const minScore = Math.min(...rolledScores);
+    return player.rolledScore === minScore ? "danger" : "safe";
+  }
+
+  // ── Setup phase ───────────────────────────────────────────────────────────
+
   if (phase === "setup") {
     return (
       <div className="min-h-screen flex flex-col">
@@ -83,7 +138,6 @@ export default function GameClient({ group, initialRoster }: Props) {
             TODAY'S LUNCH
           </h2>
 
-          {/* Player grid */}
           {sessionPlayers.length > 0 && (
             <div className="grid grid-cols-2 gap-3">
               {sessionPlayers.map((player, i) => (
@@ -99,7 +153,6 @@ export default function GameClient({ group, initialRoster }: Props) {
             </div>
           )}
 
-          {/* Empty state */}
           {sessionPlayers.length === 0 && (
             <div className="flex-1 flex flex-col items-center justify-center gap-2 py-16">
               <p className="text-4xl opacity-20">🎲</p>
@@ -107,7 +160,6 @@ export default function GameClient({ group, initialRoster }: Props) {
             </div>
           )}
 
-          {/* Add player button */}
           <button
             onClick={() => setShowPicker(true)}
             className="w-full border border-dashed border-gold/20 text-cream/40
@@ -117,10 +169,9 @@ export default function GameClient({ group, initialRoster }: Props) {
             + Add player
           </button>
 
-          {/* Start rolling — only when ≥ 2 valid prices */}
           {canStart && (
             <button
-              onClick={startRolling}
+              onClick={() => setPhase("rolling")}
               className="w-full bg-gold text-casino-black font-display tracking-widest
                          text-sm py-4 rounded-lg transition-colors hover:bg-gold-light"
             >
@@ -133,7 +184,6 @@ export default function GameClient({ group, initialRoster }: Props) {
           <AddPlayerPicker
             roster={roster}
             sessionPlayerIds={sessionPlayers.map((p) => p.playerId)}
-            groupId={group.id}
             onAddExisting={addExistingToSession}
             onAddNew={addNewToSession}
             onClose={() => setShowPicker(false)}
@@ -143,13 +193,42 @@ export default function GameClient({ group, initialRoster }: Props) {
     );
   }
 
-  // ── Rolling / Complete phases (Phase 8 & 9) ──────────────────────────────
+  // ── Rolling phase ─────────────────────────────────────────────────────────
+
+  if (phase === "rolling") {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Header groupId={group.id} groupName={group.name} />
+
+        <main className="flex-1 flex flex-col p-4 gap-6 max-w-2xl mx-auto w-full">
+          <h2 className="font-display text-gold/70 tracking-widest text-xs text-center pt-2">
+            ROLL YOUR DICE
+          </h2>
+
+          <div className="grid grid-cols-2 gap-3">
+            {sessionPlayers.map((player) => (
+              <RollingCard
+                key={player.playerId}
+                player={player}
+                rollState={getRollState(player)}
+                onRoll={() => rollPlayer(player.playerId)}
+                onDieComplete={() => onDieComplete(player.playerId)}
+              />
+            ))}
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // ── Complete phase (Phase 9) ──────────────────────────────────────────────
+
   return (
     <div className="min-h-screen flex flex-col">
       <Header groupId={group.id} groupName={group.name} />
       <main className="flex-1 flex items-center justify-center">
         <p className="text-gold/40 font-display text-lg tracking-widest">
-          Rolling… (coming in Phase 8)
+          Result… (coming in Phase 9)
         </p>
       </main>
     </div>
