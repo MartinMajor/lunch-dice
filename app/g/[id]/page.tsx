@@ -1,12 +1,27 @@
+import { notFound } from "next/navigation";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { groups, players } from "@/lib/schema";
+import GameClient from "./GameClient";
+
 export default async function GroupPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return (
-    <main className="flex min-h-screen items-center justify-center">
-      <p className="text-gold/60 font-display text-xl">Group: {id}</p>
-    </main>
-  );
+
+  const group = await db.query.groups.findFirst({
+    where: eq(groups.id, id),
+  });
+
+  if (!group) notFound();
+
+  const roster = await db
+    .select()
+    .from(players)
+    .where(eq(players.groupId, id))
+    .orderBy(players.createdAt);
+
+  return <GameClient group={group} initialRoster={roster} />;
 }
