@@ -29,7 +29,7 @@ export default function RollingCard({
       className={`
         rounded-lg border p-4 flex flex-col items-center gap-3 transition-all duration-500
         ${isDanger ? "border-danger-bright shadow-danger bg-danger/10" : ""}
-        ${isSafe ? "border-safe/40 bg-safe/10 opacity-60" : ""}
+        ${isSafe ? "border-safe/30 bg-safe/5 opacity-60" : ""}
         ${isWaiting || isRolling ? "border-gold/20 bg-felt" : ""}
       `}
     >
@@ -62,34 +62,50 @@ export default function RollingCard({
         />
       </button>
 
-      {/* Status */}
-      {isWaiting && (
-        <span className="text-xs text-cream/30 tracking-widest uppercase">
-          Tap to roll
-        </span>
-      )}
-      {isRolling && (
-        <span className="text-xs text-gold/60 tracking-widest uppercase animate-pulse">
-          Rolling…
-        </span>
-      )}
-      {hasRolled && (
-        <div className="flex flex-col items-center gap-1">
-          <span className="text-xs font-mono text-cream/50">
-            {player.rolledScore!.toFixed(4)}
+      {/* Status area — fixed height to prevent layout shift */}
+      <div className="flex flex-col items-center gap-1.5 w-full min-h-[56px] justify-center">
+        {isWaiting && (
+          <span className="text-xs text-cream/30 tracking-widest uppercase">
+            Tap to roll
           </span>
-          {isDanger && (
-            <span className="text-xs text-danger-bright tracking-widest uppercase font-display">
-              ⚠ In Danger
+        )}
+
+        {isRolling && (
+          <span className="text-xs text-gold/60 tracking-widest uppercase animate-pulse">
+            Rolling…
+          </span>
+        )}
+
+        {hasRolled && (
+          <>
+            {/* Score — dominant */}
+            <span
+              className={`text-2xl font-mono font-bold tabular-nums leading-none
+                ${isDanger ? "text-danger-bright" : "text-cream/80"}
+              `}
+            >
+              {player.rolledScore!.toFixed(4)}
             </span>
-          )}
-          {isSafe && (
-            <span className="text-xs text-safe/80 tracking-widest uppercase">
-              ✓ Safe
+
+            {/* Raw draw — secondary */}
+            <span className="text-[10px] text-cream/30 tabular-nums">
+              draw {player.rolledU!.toFixed(4)}
             </span>
-          )}
-        </div>
-      )}
+
+            {/* State badge */}
+            {isDanger && (
+              <span className="text-[10px] text-danger-bright tracking-widest uppercase font-display mt-0.5">
+                ⚠ In Danger
+              </span>
+            )}
+            {isSafe && (
+              <span className="text-[10px] text-cream/40 tracking-widest uppercase mt-0.5">
+                ✓ Safe
+              </span>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

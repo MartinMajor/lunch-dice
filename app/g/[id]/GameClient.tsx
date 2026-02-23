@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useLocalGroups } from "@/hooks/useLocalGroups";
-import { computeScore } from "@/lib/algorithm";
+import { roll } from "@/lib/algorithm";
 import Header from "@/components/Header";
 import PlayerCard from "@/components/PlayerCard";
 import AddPlayerPicker from "@/components/AddPlayerPicker";
@@ -71,14 +71,13 @@ export default function GameClient({ group, initialRoster }: Props) {
   // ── Rolling helpers ───────────────────────────────────────────────────────
 
   function rollPlayer(playerId: string) {
-    const face = Math.floor(Math.random() * 6) + 1;
     const player = sessionPlayers.find((p) => p.playerId === playerId)!;
-    const score = computeScore(parseFloat(player.price));
+    const result = roll(parseFloat(player.price));
 
     setSessionPlayers((prev) =>
       prev.map((p) =>
         p.playerId === playerId
-          ? { ...p, dieFace: face, rolledScore: score, isRolling: true }
+          ? { ...p, dieFace: result.face, rolledU: result.u, rolledScore: result.score, isRolling: true }
           : p
       )
     );
@@ -94,6 +93,7 @@ export default function GameClient({ group, initialRoster }: Props) {
             playerId: p.playerId,
             price: parseFloat(p.price),
             rolledScore: p.rolledScore!,
+            rolledU: p.rolledU!,
           })),
         }),
       });
