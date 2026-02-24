@@ -3,7 +3,7 @@
 import Die from "./Die";
 import { SessionPlayer } from "@/types/game";
 
-export type RollState = "waiting" | "rolling" | "safe" | "danger";
+export type RollState = "waiting" | "rolling" | "safe" | "danger" | "payer";
 
 interface Props {
   player: SessionPlayer;
@@ -22,26 +22,34 @@ export default function RollingCard({
   const isRolling = rollState === "rolling";
   const isSafe = rollState === "safe";
   const isDanger = rollState === "danger";
-  const hasRolled = isSafe || isDanger;
+  const isPayer = rollState === "payer";
+  const hasRolled = isSafe || isDanger || isPayer;
 
   return (
     <div
       className={`
         rounded-lg border p-4 flex flex-col items-center gap-3 transition-all duration-500
-        ${isDanger ? "border-danger-bright shadow-danger bg-danger/10" : ""}
+        ${isDanger || isPayer ? "border-danger-bright shadow-danger bg-danger/10" : ""}
         ${isSafe ? "border-safe/30 bg-safe/5 opacity-60" : ""}
         ${isWaiting || isRolling ? "border-gold/20 bg-felt" : ""}
       `}
     >
-      {/* Name */}
+      {/* Name + price */}
       <span
         className={`font-display tracking-wide text-sm truncate w-full text-center
-          ${isDanger ? "text-danger-bright" : ""}
+          ${isDanger || isPayer ? "text-danger-bright" : ""}
           ${isSafe ? "text-cream/50" : ""}
           ${isWaiting || isRolling ? "text-cream" : ""}
         `}
       >
         {player.name}
+      </span>
+      <span
+        className={`text-xs tabular-nums -mt-2
+          ${isDanger || isPayer ? "text-danger-bright/70" : "text-cream/30"}
+        `}
+      >
+        ${parseFloat(player.price).toFixed(2)}
       </span>
 
       {/* Die */}
@@ -81,7 +89,7 @@ export default function RollingCard({
             {/* Score — dominant */}
             <span
               className={`text-2xl font-mono font-bold tabular-nums leading-none
-                ${isDanger ? "text-danger-bright" : "text-cream/80"}
+                ${isDanger || isPayer ? "text-danger-bright" : "text-cream/80"}
               `}
             >
               {(player.rolledScore! * 1000000).toFixed(0)}
@@ -93,6 +101,11 @@ export default function RollingCard({
             </span>
 
             {/* State badge */}
+            {isPayer && (
+              <span className="text-[10px] text-danger-bright tracking-widest uppercase font-display mt-0.5">
+                PAYS!
+              </span>
+            )}
             {isDanger && (
               <span className="text-[10px] text-danger-bright tracking-widest uppercase font-display mt-0.5">
                 ⚠ In Danger

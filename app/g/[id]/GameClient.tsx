@@ -8,7 +8,6 @@ import PlayerCard from "@/components/PlayerCard";
 import AddPlayerPicker from "@/components/AddPlayerPicker";
 import RollingCard, { RollState } from "@/components/RollingCard";
 import Confetti from "@/components/Confetti";
-import Die from "@/components/Die";
 import { GamePhase, RosterPlayer, SessionPlayer } from "@/types/game";
 
 interface Props {
@@ -242,6 +241,10 @@ export default function GameClient({ group, initialRoster }: Props) {
     setSessionPlayers([]);
   }
 
+  function getCompleteState(player: SessionPlayer): RollState {
+    return player.playerId === payer.playerId ? "payer" : "safe";
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Confetti />
@@ -254,51 +257,15 @@ export default function GameClient({ group, initialRoster }: Props) {
           </h2>
 
           <div className="grid grid-cols-2 gap-3">
-            {sessionPlayers.map((player) => {
-              const isPayer = player.playerId === payer.playerId;
-              return (
-                <div
-                  key={player.playerId}
-                  className={`rounded-lg border p-4 flex flex-col items-center gap-3 transition-all
-                    ${isPayer
-                      ? "border-danger-bright bg-danger/10 shadow-danger"
-                      : "border-white/10 bg-white/5 opacity-40 grayscale"
-                    }`}
-                >
-                  {/* Name */}
-                  <span
-                    className={`font-display tracking-wide text-sm truncate w-full text-center
-                      ${isPayer ? "text-danger-bright" : "text-cream/40"}`}
-                  >
-                    {player.name}
-                  </span>
-
-                  {/* Die — static, landed face */}
-                  <Die face={player.dieFace ?? 1} rolling={false} size={isPayer ? 80 : 60} />
-
-                  {/* Result info */}
-                  <div className="flex flex-col items-center gap-1">
-                    {isPayer ? (
-                      <>
-                        <span className="font-display text-danger-bright tracking-widest text-xs uppercase">
-                          pays
-                        </span>
-                        <span className="text-2xl font-mono font-bold text-danger-bright">
-                          ${parseFloat(player.price).toFixed(2)}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-[10px] text-cream/30 tracking-widest uppercase">
-                        ✓ safe
-                      </span>
-                    )}
-                    <span className="text-[10px] text-cream/20 tabular-nums">
-                      score {(player.rolledScore! * 1000000).toFixed(0)}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+            {sessionPlayers.map((player) => (
+              <RollingCard
+                key={player.playerId}
+                player={player}
+                rollState={getCompleteState(player)}
+                onRoll={() => {}}
+                onDieComplete={() => {}}
+              />
+            ))}
           </div>
 
           {/* Total bill */}
