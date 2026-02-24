@@ -84,12 +84,12 @@ export default function RollingCard({
                 ${isDanger ? "text-danger-bright" : "text-cream/80"}
               `}
             >
-              {(player.rolledScore! * 10000).toFixed(2)}
+              {(player.rolledScore! * 1000000).toFixed(0)}
             </span>
 
             {/* Roll — secondary */}
             <span className="text-[10px] text-cream/30 tabular-nums">
-              roll {((1 - player.rolledU!) * 1000).toFixed(1)}
+              roll {((1 - player.rolledU!) * 10000).toFixed(0)}
             </span>
 
             {/* State badge */}
