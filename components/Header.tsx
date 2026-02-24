@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import GroupSwitcher from "./GroupSwitcher";
 
 interface Props {
@@ -10,7 +11,7 @@ interface Props {
 export default function Header({ groupId, groupName }: Props) {
   return (
     <header className="border-b border-gold/20 px-4 py-3 flex items-center justify-between">
-      <span className="font-display text-gold text-sm tracking-wider">Lunch Dice</span>
+      <Link href={`/g/${groupId}`} className="font-display text-gold text-sm tracking-wider hover:text-gold-light transition-colors">Lunch Dice</Link>
       <GroupSwitcher currentGroupId={groupId} currentGroupName={groupName} />
     </header>
   );
