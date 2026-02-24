@@ -106,7 +106,7 @@ export default function Die({ face, rolling, onRollComplete, size = 72 }: Props)
     const [tx, ty] = FACE_ROT[faceRef.current] ?? [0, 0];
 
     // Add full spins so the die tumbles visibly before landing on the target face
-    const targetX = tx + initX - (initX % 360) + 1 * 360;
+    const targetX = tx + initX - (initX % 360) + 360;
     const targetY = ty + initY - (initY % 360) + 2 * 360;
 
     currentRotRef.current = [tx, ty];
