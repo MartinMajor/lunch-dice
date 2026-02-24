@@ -29,7 +29,7 @@ export default function GameClient({ group, initialRoster }: Props) {
   const prices = sessionPlayers.map((p) => parseFloat(p.price) || 0);
   const total = prices.reduce((a, b) => a + b, 0);
   const probabilities = prices.map((p) => (total > 0 ? p / total : 0));
-  const canStart = prices.filter((p) => p > 0).length >= 2;
+  const canStart = sessionPlayers.length >= 2 && prices.every((p) => p > 0);
 
   // ── Setup callbacks ───────────────────────────────────────────────────────
 
@@ -43,14 +43,14 @@ export default function GameClient({ group, initialRoster }: Props) {
     setSessionPlayers((prev) => prev.filter((p) => p.playerId !== playerId));
   }
 
-  function addExistingToSession(player: RosterPlayer, price: string) {
+  function selectPlayer(player: RosterPlayer) {
     setSessionPlayers((prev) => [
       ...prev,
-      { playerId: player.id, name: player.name, price },
+      { playerId: player.id, name: player.name, price: "" },
     ]);
   }
 
-  async function addNewToSession(name: string, price: string) {
+  async function addNewPlayer(name: string) {
     const res = await fetch(`/api/groups/${group.id}/players`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -62,7 +62,7 @@ export default function GameClient({ group, initialRoster }: Props) {
     setRoster((prev) => [...prev, newPlayer]);
     setSessionPlayers((prev) => [
       ...prev,
-      { playerId: newPlayer.id, name: newPlayer.name, price },
+      { playerId: newPlayer.id, name: newPlayer.name, price: "" },
     ]);
   }
 
@@ -124,10 +124,10 @@ export default function GameClient({ group, initialRoster }: Props) {
         probabilities={probabilities}
         total={total}
         canStart={canStart}
+        onSelect={selectPlayer}
+        onDeselect={removeFromSession}
         onUpdatePrice={updatePrice}
-        onRemove={removeFromSession}
-        onAddExisting={addExistingToSession}
-        onAddNew={addNewToSession}
+        onAddNew={addNewPlayer}
         onStart={() => setPhase("rolling")}
       />
     );

@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import Header from "@/components/Header";
-import PlayerCard from "@/components/PlayerCard";
-import AddPlayerPicker from "@/components/AddPlayerPicker";
+import RosterCard from "@/components/RosterCard";
 import { RosterPlayer, SessionPlayer } from "@/types/game";
 
 interface Props {
@@ -13,10 +12,10 @@ interface Props {
   probabilities: number[];
   total: number;
   canStart: boolean;
+  onSelect: (player: RosterPlayer) => void;
+  onDeselect: (playerId: string) => void;
   onUpdatePrice: (playerId: string, value: string) => void;
-  onRemove: (playerId: string) => void;
-  onAddExisting: (player: RosterPlayer, price: string) => void;
-  onAddNew: (name: string, price: string) => Promise<void>;
+  onAddNew: (name: string) => Promise<void>;
   onStart: () => void;
 }
 
@@ -27,22 +26,31 @@ export default function SetupPhase({
   probabilities,
   total,
   canStart,
+  onSelect,
+  onDeselect,
   onUpdatePrice,
-  onRemove,
-  onAddExisting,
   onAddNew,
   onStart,
 }: Props) {
-  const [showPicker, setShowPicker] = useState(false);
+  const [addingNew, setAddingNew] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  function handleAddExisting(player: RosterPlayer, price: string) {
-    onAddExisting(player, price);
-    setShowPicker(false);
+  const sessionIds = new Set(sessionPlayers.map((p) => p.playerId));
+
+  async function handleAddNew() {
+    const name = newName.trim();
+    if (!name) return;
+    setSaving(true);
+    await onAddNew(name);
+    setNewName("");
+    setAddingNew(false);
+    setSaving(false);
   }
 
-  async function handleAddNew(name: string, price: string) {
-    await onAddNew(name, price);
-    setShowPicker(false);
+  function handleNewKeyDown(e: React.KeyboardEvent) {
+    if (e.key === "Enter") handleAddNew();
+    if (e.key === "Escape") { setAddingNew(false); setNewName(""); }
   }
 
   return (
@@ -50,33 +58,83 @@ export default function SetupPhase({
       <Header groupId={group.id} groupName={group.name} />
 
       <main className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
-        {/* Scrollable player area */}
+        {/* Scrollable roster area */}
         <div className="flex-1 overflow-y-auto p-4 pb-2 flex flex-col gap-6">
           <h2 className="font-display text-gold/70 tracking-widest text-xs text-center pt-2">
             TODAY'S LUNCH
           </h2>
 
+            {/* Selected players — full-width rows */}
           {sessionPlayers.length > 0 && (
-            <div className="grid grid-cols-2 gap-3">
-              {sessionPlayers.map((player, i) => (
-                <PlayerCard
-                  key={player.playerId}
-                  name={player.name}
-                  price={player.price}
+            <div className="flex flex-col gap-2">
+              {sessionPlayers.map((sp, i) => (
+                <RosterCard
+                  key={sp.playerId}
+                  name={sp.name}
+                  selected
+                  price={sp.price}
                   probability={probabilities[i]}
-                  onPriceChange={(v) => onUpdatePrice(player.playerId, v)}
-                  onRemove={() => onRemove(player.playerId)}
+                  onDeselect={() => onDeselect(sp.playerId)}
+                  onPriceChange={(v) => onUpdatePrice(sp.playerId, v)}
                 />
               ))}
             </div>
           )}
 
-          {sessionPlayers.length === 0 && (
-            <div className="flex-1 flex flex-col items-center justify-center gap-2 py-16">
-              <p className="text-4xl opacity-20">🎲</p>
-              <p className="text-cream/30 text-sm">No players yet</p>
-            </div>
-          )}
+          {/* Unselected roster + "+" — 2-column grid */}
+          <div className="grid grid-cols-2 gap-3 items-start">
+            {roster
+              .filter((p) => !sessionIds.has(p.id))
+              .map((player) => (
+                <RosterCard
+                  key={player.id}
+                  name={player.name}
+                  selected={false}
+                  onSelect={() => onSelect(player)}
+                />
+              ))}
+
+            {/* Add new person card */}
+            {!addingNew ? (
+              <button
+                onClick={() => setAddingNew(true)}
+                className="rounded-lg border border-dashed border-gold/20 text-cream/30
+                           hover:border-gold/40 hover:text-cream/50 transition-colors
+                           flex items-center justify-center min-h-[60px]"
+              >
+                <span className="text-2xl leading-none">+</span>
+              </button>
+            ) : (
+              <div className="rounded-lg border border-gold/30 bg-white/5 p-4 flex flex-col gap-3">
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Name"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  onKeyDown={handleNewKeyDown}
+                  className="bg-transparent text-cream text-sm outline-none
+                             placeholder:text-cream/30 font-display w-full"
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAddNew}
+                    disabled={!newName.trim() || saving}
+                    className="flex-1 bg-gold/80 text-casino-black text-xs py-1.5 rounded
+                               font-display disabled:opacity-30"
+                  >
+                    {saving ? "Adding…" : "Add"}
+                  </button>
+                  <button
+                    onClick={() => { setAddingNew(false); setNewName(""); }}
+                    className="text-cream/30 hover:text-cream/60 text-sm px-2"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Sticky bottom bar */}
@@ -87,15 +145,6 @@ export default function SetupPhase({
               <p className="text-gold font-display text-2xl">${total.toFixed(2)}</p>
             </div>
           )}
-          <button
-            onClick={() => setShowPicker(true)}
-            className="w-full border border-dashed border-gold/20 text-cream/40
-                       hover:border-gold/40 hover:text-cream/70
-                       rounded-lg py-3 text-sm transition-colors"
-          >
-            + Add player
-          </button>
-
           <button
             onClick={onStart}
             disabled={!canStart}
@@ -108,16 +157,6 @@ export default function SetupPhase({
           </button>
         </div>
       </main>
-
-      {showPicker && (
-        <AddPlayerPicker
-          roster={roster}
-          sessionPlayerIds={sessionPlayers.map((p) => p.playerId)}
-          onAddExisting={handleAddExisting}
-          onAddNew={handleAddNew}
-          onClose={() => setShowPicker(false)}
-        />
-      )}
     </div>
   );
 }
