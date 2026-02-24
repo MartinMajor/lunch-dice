@@ -25,6 +25,13 @@ export default function Die({ face, rolling, onRollComplete, size = 72 }: Props)
   const [displayFace, setDisplayFace] = useState(face);
   const startedRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const faceRef = useRef(face);
+  const onRollCompleteRef = useRef(onRollComplete);
+
+  // Keep refs in sync so the rolling closure always sees the latest values
+  // without being in the effect dependency array
+  faceRef.current = face;
+  onRollCompleteRef.current = onRollComplete;
 
   useEffect(() => {
     if (!rolling || startedRef.current) return;
@@ -42,8 +49,8 @@ export default function Die({ face, rolling, onRollComplete, size = 72 }: Props)
         const delay = 60 + (step / steps) * 160;
         timerRef.current = setTimeout(cycle, delay);
       } else {
-        setDisplayFace(face);
-        onRollComplete?.();
+        setDisplayFace(faceRef.current);
+        onRollCompleteRef.current?.();
       }
     }
 
@@ -60,7 +67,7 @@ export default function Die({ face, rolling, onRollComplete, size = 72 }: Props)
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [rolling, face, controls, onRollComplete]);
+  }, [rolling, controls]);
 
   // When rolling resets (new game), reset the guard
   useEffect(() => {
