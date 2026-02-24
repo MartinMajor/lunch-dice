@@ -23,11 +23,16 @@ app/
   page.tsx                    Landing: auto-redirect or create-group form
   not-found.tsx               Casino-themed 404 page
   g/[id]/
-    page.tsx                  Server component: fetches group + roster, calls notFound()
-    GameClient.tsx            Client: owns all game state, routes between phases
+    page.tsx                  Server component: fetches group + roster ordered by last played, calls notFound()
+    GameClient.tsx            Client: owns all game state, routes between phases, tracks save status
     SetupPhase.tsx            Setup UI: roster-first inline player selection
     RollingPhase.tsx          Rolling UI: die cards, total bill
-    CompletePhase.tsx         Result UI: winner + confetti + new game
+    CompletePhase.tsx         Result UI: winner + confetti + save status + retry + new game
+    stats/
+      page.tsx                Server component: computes per-player and group stats
+      StatsClient.tsx         Client: overview (balance leaderboard) + player detail drill-down
+    history/
+      page.tsx                Server component: reverse-chronological session log
   api/
     groups/route.ts                   POST create group
     groups/[id]/route.ts              GET group + roster
@@ -35,13 +40,14 @@ app/
     groups/[id]/sessions/route.ts     POST save completed session
 
 components/
-  Header.tsx          Share button (clipboard) + GroupSwitcher
-  GroupSwitcher.tsx   Dropdown: current group, saved groups, create, join
+  Header.tsx          "Lunch Dice" title link (→ /g/[id]) + GroupSwitcher
+  GroupSwitcher.tsx   Dropdown: current group (with forget), saved groups, copy link, create, join, stats, history, GitHub
   RosterCard.tsx      Setup card — two states (see Setup section)
   RollingCard.tsx     Rolling/result card with die, score, roll values
   Die.tsx             Animated 3D die (Framer Motion)
   ProbabilityBar.tsx  Horizontal gold bar showing win probability
   Confetti.tsx        Falling card suits (♠♦♣♥) animation
+  FormattedDate.tsx   Client component: formats ISO date string in browser timezone
 
 lib/
   db.ts               Drizzle client (Neon serverless)
@@ -49,7 +55,7 @@ lib/
   algorithm.ts        roll() — see GAME.md
 
 hooks/
-  useLocalGroups.ts   localStorage: group list management
+  useLocalGroups.ts   localStorage: group list management (add, remove, getLastGroup)
 
 types/
   game.ts             RosterPlayer, SessionPlayer, GamePhase
@@ -63,7 +69,7 @@ types/
 groups          id varchar(16) PK | name text | created_at
 players         id uuid PK | group_id FK | name text | created_at
 sessions        id uuid PK | group_id FK | played_at
-session_players id uuid PK | session_id FK | player_id FK | price real | rolled_score real | rolled_u real
+session_players id uuid PK | session_id FK | player_id FK | price real | rolled_score real
 ```
 
 The **group ID is the auth token** — 16-char nanoid, unguessable, shared as a URL. No login.
@@ -81,9 +87,9 @@ The payer is always derived at read time as the `session_player` with the lowest
 | POST | `/api/groups` | `{ name }` → `{ id, name }` |
 | GET | `/api/groups/[id]` | → `{ group, roster[] }` |
 | POST | `/api/groups/[id]/players` | `{ name }` → player |
-| POST | `/api/groups/[id]/sessions` | `{ players: [{ playerId, price, rolledScore, rolledU }] }` |
+| POST | `/api/groups/[id]/sessions` | `{ players: [{ playerId, price, rolledScore }] }` |
 
-Session save is fire-and-forget (no await in the UI). Requires `players.length >= 2` and all `price > 0`.
+Session save is **async with retry** — `GameClient` tracks `saveStatus: "idle" | "saving" | "saved" | "error"`. On error, `CompletePhase` shows a retry button. Requires `players.length >= 2` and all `price > 0`.
 
 ---
 
@@ -104,8 +110,8 @@ SETUP  →  ROLLING  →  COMPLETE
 
 **Transitions:**
 - `setup → rolling`: "START ROLLING" clicked; requires all selected players have `price > 0` and `sessionPlayers.length >= 2`
-- `rolling → complete`: triggered when last player's die animation finishes; 600ms delay then phase change; session saved
-- `complete → setup`: "NEW GAME" resets `phase` and clears `sessionPlayers`
+- `rolling → complete`: detected by a `useEffect` watching `sessionPlayers` (all have `rolledScore` and `!isRolling`); 600ms delay then phase change; session saved. Uses `completionFiredRef` to guard against React re-invoking the effect.
+- `complete → setup`: "NEW GAME" resets `phase`, clears `sessionPlayers`, resets save refs
 
 ---
 
@@ -113,9 +119,11 @@ SETUP  →  ROLLING  →  COMPLETE
 
 ### GameClient (state owner)
 
-Holds: `phase`, `roster`, `sessionPlayers`, `showPicker`.
+Holds: `phase`, `roster`, `sessionPlayers`, `saveStatus`.
 
 Computes derived values (`prices`, `total`, `probabilities`, `canStart`) and passes them down. All callbacks live here. Phase components are pure UI.
+
+**Save guard pattern:** `savedRef` and `completionFiredRef` are refs (not state) that prevent double-firing in React 18 concurrent mode. State updater functions must be pure — side effects (network calls) must live outside them, in effects or event handlers.
 
 ### SessionPlayer type
 
@@ -124,14 +132,14 @@ interface SessionPlayer {
   playerId: string;
   name: string;
   price: string;          // kept as string for input flexibility
-  rolledU?: number;
+  rolledU?: number;       // raw uniform draw (display only, not persisted)
   rolledScore?: number;
   dieFace?: number;
   isRolling?: boolean;
 }
 ```
 
-`price` is a string throughout setup and rolling. Only parsed to float at roll-time and when saving.
+`price` is a string throughout setup and rolling. Only parsed to float at roll-time and when saving. `rolledU` is used for the display transformation (roll value shown on card) but is not stored in the database — `rolledScore` alone is persisted.
 
 ### SetupPhase layout
 
@@ -146,7 +154,7 @@ Two sections:
 
 - `waiting` — gold border, "Tap to roll"
 - `rolling` — pulsing "Rolling…"
-- `safe` — dimmed green, "✓ Safe"
+- `safe` — green border/bg, "✓ Safe"
 - `danger` — red glow, "⚠ In Danger" (current lowest score during rolling)
 - `payer` — red glow, "PAYS!" (used on complete phase; same styling as danger)
 
@@ -154,7 +162,18 @@ Two sections:
 
 ### Die component
 
-`rolling` prop drives the animation. Key implementation detail: `onRollComplete` and `face` are stored in refs inside the effect — **do not** add them to the `useEffect` dependency array. If they are deps, re-renders triggered by other players rolling will cancel the in-progress `setTimeout` chain via cleanup, freezing the animation mid-roll.
+`rolling` prop drives the animation. Key implementation detail: `onRollComplete` and `face` are stored in refs inside the effect — **do not** add them to the `useEffect` dependency array. If they are deps, re-renders triggered by other players rolling will cancel the in-progress animation via cleanup, freezing the die mid-roll.
+
+### Stats pages
+
+`stats/page.tsx` fetches all session rows for the group in one query, then computes everything in TypeScript:
+- Groups rows by session → derives total bill and payer (min `rolledScore`) per session
+- Groups rows by player → accumulates plays, paid times, expected/actual pay, streak, etc.
+- `expectedPay = Σ own price` (equals fair share by the algorithm's proof)
+- `balance = expectedPay − actualPay` — positive means lucky (paid less than fair share)
+- Streak: sessions in reverse-chronological order, count of consecutive same outcome
+
+`StatsClient.tsx` is client-only. Overview shows balance leaderboard; tapping a player shows a detail tile grid. No navigation — drill-down is client state.
 
 ---
 
@@ -169,9 +188,9 @@ Custom Tailwind colors (defined in `tailwind.config.ts`):
 | `gold` | `#c9a84c` | Primary accent, buttons |
 | `gold-light` | `#e8c96a` | Hover state for gold |
 | `cream` | `#f5f0e8` | Body text |
-| `danger` | `#8b1a1a` | Background of payer card |
-| `danger-bright` | `#cc2222` | Payer text, borders |
-| `safe` | `#1a4a1a` | Safe player tint |
+| `danger` | `#8b1a1a` | Background tint of payer card |
+| `danger-bright` | `#cc2222` | Payer text, borders, streak |
+| `safe` | `#4a8a4a` | Safe player border/bg/text |
 
 Custom shadows: `shadow-gold`, `shadow-danger`, `shadow-safe`.
 
@@ -193,7 +212,7 @@ interface LocalGroup {
 }
 ```
 
-`addGroup(id, name)` upserts and updates `lastVisited`. On `/`, the group with the most recent `lastVisited` triggers an auto-redirect. Used by `GroupSwitcher` to populate the dropdown.
+`addGroup(id, name)` upserts and updates `lastVisited`. `removeGroup(id)` deletes. On `/`, the group with the most recent `lastVisited` triggers an auto-redirect. Used by `GroupSwitcher` to populate the saved-groups list.
 
 ---
 
@@ -205,8 +224,10 @@ interface LocalGroup {
 
 3. **Roster vs. session** — the group maintains a permanent `roster`. Each game uses a subset (`sessionPlayers`). Players are selected fresh each game; prices are never pre-filled.
 
-4. **Fire-and-forget session save** — no await, no error recovery. If the save fails, the game still completes normally for the users.
+4. **Retryable session save** — save is async; `saveStatus` state drives UI feedback in `CompletePhase`. On network error a retry button appears. `savedRef` prevents double-saves from React concurrent mode re-runs.
 
 5. **price as string** — `SessionPlayer.price` is kept as a string from input to roll-time to avoid controlled input jank and allow empty/partial values during editing.
 
 6. **Roster-first setup** — the full roster is shown upfront; users tap to select, not search/add. Selected players move to a full-width stack at top; unselected stay in a 2-col ghost grid below.
+
+7. **Stats computed at read time** — no pre-aggregated stats columns in the DB. All balance/streak/etc values are derived from raw `session_players` rows in the stats page server component. Keeps the write path simple and stats always consistent.

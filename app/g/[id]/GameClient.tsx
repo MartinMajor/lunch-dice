@@ -90,7 +90,6 @@ export default function GameClient({ group, initialRoster }: Props) {
               playerId: p.playerId,
               price: parseFloat(p.price),
               rolledScore: p.rolledScore!,
-              rolledU: p.rolledU!,
             })),
           }),
         });
