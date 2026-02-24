@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { groups, players } from "@/lib/schema";
+import { groups, players, sessions, sessionPlayers } from "@/lib/schema";
 import GameClient from "./GameClient";
 
 export default async function GroupPage({
@@ -18,10 +18,13 @@ export default async function GroupPage({
   if (!group) notFound();
 
   const roster = await db
-    .select()
+    .select({ id: players.id, name: players.name })
     .from(players)
+    .leftJoin(sessionPlayers, eq(sessionPlayers.playerId, players.id))
+    .leftJoin(sessions, eq(sessions.id, sessionPlayers.sessionId))
     .where(eq(players.groupId, id))
-    .orderBy(players.createdAt);
+    .groupBy(players.id)
+    .orderBy(sql`MAX(${sessions.playedAt}) DESC NULLS LAST`);
 
   return <GameClient group={group} initialRoster={roster} />;
 }
