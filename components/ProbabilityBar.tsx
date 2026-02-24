@@ -13,7 +13,7 @@ export default function ProbabilityBar({ probability }: Props) {
           style={{ width: `${pct}%` }}
         />
       </div>
-      <span className="text-xs text-cream/50 w-8 text-right tabular-nums">{pct}%</span>
+      <span className="text-xs text-cream/70 w-8 text-right tabular-nums">{pct}%</span>
     </div>
   );
 }

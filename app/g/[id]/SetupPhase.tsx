@@ -98,8 +98,8 @@ export default function SetupPhase({
             {!addingNew ? (
               <button
                 onClick={() => setAddingNew(true)}
-                className="rounded-lg border border-dashed border-gold/20 text-cream/30
-                           hover:border-gold/40 hover:text-cream/50 transition-colors
+                className="rounded-lg border border-dashed border-gold/20 text-cream/60
+                           hover:border-gold/40 hover:text-cream/80 transition-colors
                            flex items-center justify-center min-h-[60px]"
               >
                 <span className="text-2xl leading-none">+</span>
@@ -114,7 +114,7 @@ export default function SetupPhase({
                   onChange={(e) => setNewName(e.target.value)}
                   onKeyDown={handleNewKeyDown}
                   className="bg-transparent text-cream text-sm outline-none
-                             placeholder:text-cream/30 font-display w-full"
+                             placeholder:text-cream/50 font-display w-full"
                 />
                 <div className="flex gap-2">
                   <button
@@ -127,7 +127,7 @@ export default function SetupPhase({
                   </button>
                   <button
                     onClick={() => { setAddingNew(false); setNewName(""); }}
-                    className="text-cream/30 hover:text-cream/60 text-sm px-2"
+                    className="text-cream/60 hover:text-cream text-sm px-2"
                   >
                     ✕
                   </button>
@@ -141,7 +141,7 @@ export default function SetupPhase({
         <div className="p-4 pt-2 flex flex-col gap-3 border-t border-gold/10">
           {total > 0 && (
             <div className="text-center">
-              <p className="text-cream/30 text-xs uppercase tracking-widest">Total bill</p>
+              <p className="text-cream/60 text-xs uppercase tracking-widest">Total bill</p>
               <p className="text-gold font-display text-2xl">${total.toFixed(2)}</p>
             </div>
           )}

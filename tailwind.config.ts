@@ -15,7 +15,7 @@ const config: Config = {
         "cream": "#f5f0e8",
         "danger": "#8b1a1a",
         "danger-bright": "#cc2222",
-        "safe": "#1a4a1a",
+        "safe": "#4a8a4a",
       },
       fontFamily: {
         display: ["var(--font-cinzel)", "serif"],
@@ -24,7 +24,7 @@ const config: Config = {
       boxShadow: {
         "gold": "0 0 20px rgba(201, 168, 76, 0.4)",
         "danger": "0 0 20px rgba(204, 34, 34, 0.6)",
-        "safe": "0 0 20px rgba(26, 74, 26, 0.5)",
+        "safe": "0 0 15px rgba(74, 138, 74, 0.3)",
       },
     },
   },

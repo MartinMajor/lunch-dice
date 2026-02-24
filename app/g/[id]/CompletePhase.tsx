@@ -41,7 +41,7 @@ export default function CompletePhase({ group, sessionPlayers, onNewGame }: Prop
           </div>
 
           <div className="text-center">
-            <p className="text-cream/30 text-xs uppercase tracking-widest">Total bill</p>
+            <p className="text-cream/60 text-xs uppercase tracking-widest">Total bill</p>
             <p className="text-gold font-display text-2xl">${billTotal.toFixed(2)}</p>
           </div>
         </div>

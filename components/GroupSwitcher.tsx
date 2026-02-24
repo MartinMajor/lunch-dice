@@ -146,14 +146,14 @@ export default function GroupSwitcher({ currentGroupId, currentGroupName }: Prop
             <div>
               <button
                 onClick={() => setMode("creating")}
-                className="w-full text-left px-4 py-2.5 text-cream/50 text-sm
+                className="w-full text-left px-4 py-2.5 text-cream/70 text-sm
                            hover:bg-white/5 hover:text-cream transition-colors"
               >
                 + Create new group
               </button>
               <button
                 onClick={() => setMode("joining")}
-                className="w-full text-left px-4 py-2.5 text-cream/50 text-sm
+                className="w-full text-left px-4 py-2.5 text-cream/70 text-sm
                            hover:bg-white/5 hover:text-cream transition-colors"
               >
                 ↵ Join with a link
@@ -170,7 +170,7 @@ export default function GroupSwitcher({ currentGroupId, currentGroupName }: Prop
                 onChange={(e) => { setNewName(e.target.value); setNewNameError(""); }}
                 placeholder="Group name"
                 maxLength={50}
-                className="bg-felt border border-gold/30 text-cream placeholder-cream/20
+                className="bg-felt border border-gold/30 text-cream placeholder-cream/40
                            rounded px-3 py-2 text-xs outline-none
                            focus:border-gold/70 transition-all w-full"
               />
@@ -188,7 +188,7 @@ export default function GroupSwitcher({ currentGroupId, currentGroupName }: Prop
                 <button
                   type="button"
                   onClick={() => setMode("idle")}
-                  className="flex-1 text-cream/40 text-xs py-1.5 rounded
+                  className="flex-1 text-cream/65 text-xs py-1.5 rounded
                              hover:text-cream/70 transition-colors"
                 >
                   Cancel
@@ -205,7 +205,7 @@ export default function GroupSwitcher({ currentGroupId, currentGroupName }: Prop
                 value={joinInput}
                 onChange={(e) => { setJoinInput(e.target.value); setJoinError(""); }}
                 placeholder="Paste link or group ID"
-                className="bg-felt border border-gold/30 text-cream placeholder-cream/20
+                className="bg-felt border border-gold/30 text-cream placeholder-cream/40
                            rounded px-3 py-2 text-xs outline-none
                            focus:border-gold/70 transition-all w-full"
               />
@@ -221,7 +221,7 @@ export default function GroupSwitcher({ currentGroupId, currentGroupName }: Prop
                 <button
                   type="button"
                   onClick={() => setMode("idle")}
-                  className="flex-1 text-cream/40 text-xs py-1.5 rounded
+                  className="flex-1 text-cream/65 text-xs py-1.5 rounded
                              hover:text-cream/70 transition-colors"
                 >
                   Cancel

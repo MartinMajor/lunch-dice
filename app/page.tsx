@@ -74,7 +74,7 @@ export default function Home() {
           <h1 className="font-display text-5xl text-gold tracking-widest mb-2">
             LUNCH DICE
           </h1>
-          <p className="text-cream/50 text-sm tracking-wider uppercase">
+          <p className="text-cream/70 text-sm tracking-wider uppercase">
             Who pays today?
           </p>
         </div>
@@ -89,7 +89,7 @@ export default function Home() {
         {/* Create group form */}
         <form onSubmit={handleCreate} className="w-full flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-cream/60 text-xs uppercase tracking-widest">
+            <label className="text-cream/75 text-xs uppercase tracking-widest">
               Group name
             </label>
             <input
@@ -99,7 +99,7 @@ export default function Home() {
               onChange={(e) => setGroupName(e.target.value)}
               placeholder="e.g. Office Crew"
               maxLength={50}
-              className="bg-felt border border-gold/30 text-cream placeholder-cream/20
+              className="bg-felt border border-gold/30 text-cream placeholder-cream/40
                          rounded px-4 py-3 text-sm outline-none
                          focus:border-gold/70 focus:shadow-gold transition-all"
             />
@@ -122,7 +122,7 @@ export default function Home() {
         </form>
 
         {/* Join existing */}
-        <p className="text-cream/30 text-xs text-center">
+        <p className="text-cream/60 text-xs text-center">
           Have a link? Just open it — you'll be added automatically.
         </p>
       </div>

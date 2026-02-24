@@ -37,14 +37,14 @@ export default function Header({ groupId, groupName }: Props) {
       <div className="flex items-center gap-3">
         <button
           onClick={handleShare}
-          className="text-xs text-cream/50 hover:text-cream transition-colors
+          className="text-xs text-cream/70 hover:text-cream transition-colors
                      flex items-center gap-1.5"
         >
           <span>{copied ? "✓ Copied" : "⬡ Share"}</span>
         </button>
         <Link
           href={`/g/${groupId}/history`}
-          className="text-xs text-cream/30 hover:text-cream/60 transition-colors"
+          className="text-xs text-cream/60 hover:text-cream transition-colors"
         >
           History
         </Link>

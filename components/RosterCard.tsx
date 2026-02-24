@@ -29,7 +29,7 @@ export default function RosterCard({
                    flex items-center justify-center min-h-[60px]
                    hover:border-gold/30 hover:bg-white/5 transition-colors"
       >
-        <span className="font-display tracking-wide text-sm text-cream/40 hover:text-cream/60">
+        <span className="font-display tracking-wide text-sm text-cream/65 hover:text-cream">
           {name}
         </span>
       </button>
@@ -43,7 +43,7 @@ export default function RosterCard({
         <span className="font-display tracking-wide text-sm text-cream flex-1 truncate">
           {name}
         </span>
-        <span className="text-cream/40 text-sm flex-shrink-0">$</span>
+        <span className="text-cream/65 text-sm flex-shrink-0">$</span>
         <input
           type="number"
           inputMode="decimal"
@@ -54,14 +54,14 @@ export default function RosterCard({
           onChange={(e) => onPriceChange?.(e.target.value)}
           autoFocus
           className="w-20 bg-transparent text-cream text-sm outline-none text-right
-                     placeholder:text-cream/20
+                     placeholder:text-cream/40
                      [appearance:textfield]
                      [&::-webkit-outer-spin-button]:appearance-none
                      [&::-webkit-inner-spin-button]:appearance-none"
         />
         <button
           onClick={onDeselect}
-          className="text-cream/30 hover:text-cream/60 text-xl leading-none flex-shrink-0"
+          className="text-cream/60 hover:text-cream text-xl leading-none flex-shrink-0"
           aria-label={`Remove ${name}`}
         >
           ×

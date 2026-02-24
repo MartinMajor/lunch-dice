@@ -53,7 +53,7 @@ export default function RollingPhase({
         </div>
 
         <div className="p-4 pt-2 border-t border-gold/10 text-center">
-          <p className="text-cream/30 text-xs uppercase tracking-widest">Total bill</p>
+          <p className="text-cream/60 text-xs uppercase tracking-widest">Total bill</p>
           <p className="text-gold font-display text-2xl">${total.toFixed(2)}</p>
         </div>
       </main>

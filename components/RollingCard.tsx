@@ -30,7 +30,7 @@ export default function RollingCard({
       className={`
         rounded-lg border p-4 flex flex-col items-center gap-3 transition-all duration-500
         ${isDanger || isPayer ? "border-danger-bright shadow-danger bg-danger/10" : ""}
-        ${isSafe ? "border-safe/30 bg-safe/5 opacity-60" : ""}
+        ${isSafe ? "border-safe/40 bg-safe/10" : ""}
         ${isWaiting || isRolling ? "border-gold/20 bg-felt" : ""}
       `}
     >
@@ -38,7 +38,7 @@ export default function RollingCard({
       <span
         className={`font-display tracking-wide text-sm truncate w-full text-center
           ${isDanger || isPayer ? "text-danger-bright" : ""}
-          ${isSafe ? "text-cream/50" : ""}
+          ${isSafe ? "text-cream" : ""}
           ${isWaiting || isRolling ? "text-cream" : ""}
         `}
       >
@@ -46,7 +46,7 @@ export default function RollingCard({
       </span>
       <span
         className={`text-xs tabular-nums -mt-2
-          ${isDanger || isPayer ? "text-danger-bright/70" : "text-cream/30"}
+          ${isDanger || isPayer ? "text-danger-bright/70" : "text-cream/60"}
         `}
       >
         ${parseFloat(player.price).toFixed(2)}
@@ -73,7 +73,7 @@ export default function RollingCard({
       {/* Status area — fixed height to prevent layout shift */}
       <div className="flex flex-col items-center gap-1.5 w-full min-h-[56px] justify-center">
         {isWaiting && (
-          <span className="text-xs text-cream/30 tracking-widest uppercase">
+          <span className="text-xs text-cream/60 tracking-widest uppercase">
             Tap to roll
           </span>
         )}
@@ -96,7 +96,7 @@ export default function RollingCard({
             </span>
 
             {/* Roll — secondary */}
-            <span className="text-[10px] text-cream/30 tabular-nums">
+            <span className="text-[10px] text-cream/60 tabular-nums">
               roll {((1 - player.rolledU!) * 10000).toFixed(0)}
             </span>
 
@@ -112,7 +112,7 @@ export default function RollingCard({
               </span>
             )}
             {isSafe && (
-              <span className="text-[10px] text-cream/40 tracking-widest uppercase mt-0.5">
+              <span className="text-[10px] text-safe tracking-widest uppercase mt-0.5">
                 ✓ Safe
               </span>
             )}
