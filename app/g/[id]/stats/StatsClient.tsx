@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import FormattedDate from "@/components/FormattedDate";
 
 export interface PlayerStat {
   playerId: string;
@@ -38,14 +39,6 @@ function fmtBalance(n: number) {
   return `${sign}$${Math.abs(n).toFixed(2)}`;
 }
 
-function fmtDate(iso: string | null) {
-  if (!iso) return "Never";
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
 
 function StatTile({
   value,
@@ -114,7 +107,10 @@ export default function StatsClient({ groupId, groupStat, playerStats }: Props) 
             value={selected.biggestBill > 0 ? fmt(selected.biggestBill) : "—"}
             label="Biggest bill"
           />
-          <StatTile value={fmtDate(selected.lastPaid)} label="Last paid" />
+          <StatTile
+            value={selected.lastPaid ? <FormattedDate iso={selected.lastPaid} /> : "Never"}
+            label="Last paid"
+          />
           <StatTile value={streakValue} label={streakLabel} valueClass={streakClass} />
         </div>
       </main>

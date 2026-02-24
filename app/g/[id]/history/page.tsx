@@ -4,14 +4,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { groups, players, sessions, sessionPlayers } from "@/lib/schema";
 import Header from "@/components/Header";
-
-function formatDate(date: Date) {
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
+import FormattedDate from "@/components/FormattedDate";
 
 export default async function HistoryPage({
   params,
@@ -97,7 +90,7 @@ export default async function HistoryPage({
                 className="rounded-lg border border-gold/15 bg-white/3 px-4 py-3 flex flex-col gap-1.5"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-cream/60 text-xs">{formatDate(s.playedAt)}</span>
+                  <span className="text-cream/60 text-xs"><FormattedDate iso={s.playedAt.toISOString()} /></span>
                   <span className="text-gold font-mono text-sm tabular-nums">
                     ${s.totalBill.toFixed(2)}
                   </span>
