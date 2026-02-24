@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocalGroups } from "@/hooks/useLocalGroups";
 import { roll } from "@/lib/algorithm";
 import { GamePhase, RosterPlayer, SessionPlayer } from "@/types/game";
 import SetupPhase from "./SetupPhase";
 import RollingPhase from "./RollingPhase";
 import CompletePhase from "./CompletePhase";
+
+type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 interface Props {
   group: { id: string; name: string };
@@ -19,6 +21,12 @@ export default function GameClient({ group, initialRoster }: Props) {
   const [phase, setPhase] = useState<GamePhase>("setup");
   const [roster, setRoster] = useState<RosterPlayer[]>(initialRoster);
   const [sessionPlayers, setSessionPlayers] = useState<SessionPlayer[]>([]);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+
+  // Refs guard against double-invocation of state updaters (React concurrent mode)
+  // and against the completion effect running more than once per game.
+  const savedRef = useRef(false);
+  const completionFiredRef = useRef(false);
 
   useEffect(() => {
     addGroup(group.id, group.name);
@@ -66,6 +74,40 @@ export default function GameClient({ group, initialRoster }: Props) {
     ]);
   }
 
+  // ── Save session ──────────────────────────────────────────────────────────
+
+  const saveSession = useCallback(
+    async (players: SessionPlayer[]) => {
+      if (savedRef.current) return;
+      savedRef.current = true;
+      setSaveStatus("saving");
+      try {
+        const res = await fetch(`/api/groups/${group.id}/sessions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            players: players.map((p) => ({
+              playerId: p.playerId,
+              price: parseFloat(p.price),
+              rolledScore: p.rolledScore!,
+              rolledU: p.rolledU!,
+            })),
+          }),
+        });
+        if (!res.ok) {
+          savedRef.current = false;
+          setSaveStatus("error");
+          return;
+        }
+        setSaveStatus("saved");
+      } catch {
+        savedRef.current = false; // allow retry
+        setSaveStatus("error");
+      }
+    },
+    [group.id]
+  );
+
   // ── Rolling callbacks ─────────────────────────────────────────────────────
 
   function rollPlayer(playerId: string) {
@@ -81,36 +123,34 @@ export default function GameClient({ group, initialRoster }: Props) {
     );
   }
 
-  const saveSession = useCallback(
-    (players: SessionPlayer[]) => {
-      fetch(`/api/groups/${group.id}/sessions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          players: players.map((p) => ({
-            playerId: p.playerId,
-            price: parseFloat(p.price),
-            rolledScore: p.rolledScore!,
-            rolledU: p.rolledU!,
-          })),
-        }),
-      });
-    },
-    [group.id]
-  );
-
+  // Pure state update — no side effects inside the updater.
   function onDieComplete(playerId: string) {
-    setSessionPlayers((prev) => {
-      const updated = prev.map((p) =>
-        p.playerId === playerId ? { ...p, isRolling: false } : p
-      );
-      const allDone = updated.every((p) => p.rolledScore !== undefined && !p.isRolling);
-      if (allDone) {
-        setTimeout(() => setPhase("complete"), 600);
-        saveSession(updated);
-      }
-      return updated;
-    });
+    setSessionPlayers((prev) =>
+      prev.map((p) => (p.playerId === playerId ? { ...p, isRolling: false } : p))
+    );
+  }
+
+  // Detect completion outside the updater to avoid React double-invocation.
+  useEffect(() => {
+    if (phase !== "rolling") return;
+    const allDone =
+      sessionPlayers.length > 0 &&
+      sessionPlayers.every((p) => p.rolledScore !== undefined && !p.isRolling);
+    if (!allDone || completionFiredRef.current) return;
+
+    completionFiredRef.current = true;
+    setTimeout(() => setPhase("complete"), 600);
+    void saveSession(sessionPlayers);
+  }, [sessionPlayers, phase, saveSession]);
+
+  // ── New game ──────────────────────────────────────────────────────────────
+
+  function handleNewGame() {
+    savedRef.current = false;
+    completionFiredRef.current = false;
+    setSaveStatus("idle");
+    setPhase("setup");
+    setSessionPlayers([]);
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -149,10 +189,12 @@ export default function GameClient({ group, initialRoster }: Props) {
     <CompletePhase
       group={group}
       sessionPlayers={sessionPlayers}
-      onNewGame={() => {
-        setPhase("setup");
-        setSessionPlayers([]);
+      saveStatus={saveStatus}
+      onRetrySave={() => {
+        savedRef.current = false;
+        void saveSession(sessionPlayers);
       }}
+      onNewGame={handleNewGame}
     />
   );
 }

@@ -5,13 +5,23 @@ import RollingCard from "@/components/RollingCard";
 import Confetti from "@/components/Confetti";
 import { SessionPlayer } from "@/types/game";
 
+type SaveStatus = "idle" | "saving" | "saved" | "error";
+
 interface Props {
   group: { id: string; name: string };
   sessionPlayers: SessionPlayer[];
+  saveStatus: SaveStatus;
+  onRetrySave: () => void;
   onNewGame: () => void;
 }
 
-export default function CompletePhase({ group, sessionPlayers, onNewGame }: Props) {
+export default function CompletePhase({
+  group,
+  sessionPlayers,
+  saveStatus,
+  onRetrySave,
+  onNewGame,
+}: Props) {
   const payer = sessionPlayers.reduce((min, p) =>
     (p.rolledScore ?? Infinity) < (min.rolledScore ?? Infinity) ? p : min
   );
@@ -42,7 +52,23 @@ export default function CompletePhase({ group, sessionPlayers, onNewGame }: Prop
           </div>
         </div>
 
-        <div className="p-4 pt-2 border-t border-gold/10">
+        <div className="p-4 pt-2 border-t border-gold/10 flex flex-col gap-3">
+          {saveStatus === "saving" && (
+            <p className="text-cream/50 text-xs text-center animate-pulse">Saving…</p>
+          )}
+          {saveStatus === "error" && (
+            <div className="flex items-center justify-center gap-3">
+              <p className="text-danger-bright text-xs">Could not save results.</p>
+              <button
+                onClick={onRetrySave}
+                className="text-xs text-gold hover:text-gold-light transition-colors underline
+                           underline-offset-2"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
           <button
             onClick={onNewGame}
             className="w-full bg-gold text-casino-black font-display tracking-widest
