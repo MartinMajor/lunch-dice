@@ -14,7 +14,7 @@ type Mode = "idle" | "creating" | "joining";
 
 export default function GroupSwitcher({ currentGroupId, currentGroupName }: Props) {
   const router = useRouter();
-  const { groups, addGroup } = useLocalGroups();
+  const { groups, addGroup, removeGroup } = useLocalGroups();
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("idle");
   const [newName, setNewName] = useState("");
@@ -23,6 +23,7 @@ export default function GroupSwitcher({ currentGroupId, currentGroupName }: Prop
   const [joinInput, setJoinInput] = useState("");
   const [joinError, setJoinError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [confirmingForget, setConfirmingForget] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const newNameRef = useRef<HTMLInputElement>(null);
   const joinInputRef = useRef<HTMLInputElement>(null);
@@ -49,6 +50,7 @@ export default function GroupSwitcher({ currentGroupId, currentGroupName }: Prop
     setNewNameError("");
     setJoinInput("");
     setJoinError("");
+    setConfirmingForget(null);
   }
 
   async function handleCopyLink() {
@@ -120,6 +122,16 @@ export default function GroupSwitcher({ currentGroupId, currentGroupName }: Prop
     router.push(`/g/${id}`);
   }
 
+  function handleForgetConfirmed(id: string) {
+    removeGroup(id);
+    if (id === currentGroupId) {
+      closeAll();
+      router.push("/");
+    } else {
+      setConfirmingForget(null);
+    }
+  }
+
   const others = groups.filter((g) => g.id !== currentGroupId);
 
   return (
@@ -128,6 +140,7 @@ export default function GroupSwitcher({ currentGroupId, currentGroupName }: Prop
         onClick={() => {
           setOpen((v) => !v);
           setMode("idle");
+          setConfirmingForget(null);
         }}
         className="flex items-center gap-2 text-gold font-display text-sm tracking-wider
                    hover:text-gold-light transition-colors"
@@ -140,23 +153,76 @@ export default function GroupSwitcher({ currentGroupId, currentGroupName }: Prop
         <div className="absolute right-0 top-full mt-2 w-64 bg-[#111118] border border-gold/20
                         rounded shadow-lg z-50 overflow-hidden">
           {/* Current group */}
-          <div className="px-4 py-2.5 flex items-center gap-2 border-b border-gold/10">
-            <span className="text-gold text-xs">✓</span>
-            <span className="text-cream text-sm truncate">{currentGroupName}</span>
-          </div>
+          {confirmingForget === currentGroupId ? (
+            <div className="px-4 py-2.5 flex items-center gap-2 border-b border-gold/10">
+              <span className="text-cream/70 text-xs flex-1">Forget this group?</span>
+              <button
+                onClick={() => handleForgetConfirmed(currentGroupId)}
+                className="text-danger-bright text-xs hover:text-danger-bright/80 transition-colors"
+              >
+                Forget
+              </button>
+              <span className="text-cream/30 text-xs">·</span>
+              <button
+                onClick={() => setConfirmingForget(null)}
+                className="text-cream/60 text-xs hover:text-cream transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <div className="px-4 py-2.5 flex items-center gap-2 border-b border-gold/10">
+              <span className="text-gold text-xs">✓</span>
+              <span className="text-cream text-sm truncate flex-1">{currentGroupName}</span>
+              <button
+                onClick={() => setConfirmingForget(currentGroupId)}
+                className="text-cream/30 hover:text-cream/70 transition-colors text-base leading-none flex-shrink-0"
+                aria-label="Forget this group"
+              >
+                ×
+              </button>
+            </div>
+          )}
 
           {/* Other saved groups */}
           {others.length > 0 && (
             <div className="border-b border-gold/10">
               {others.map((g) => (
-                <button
-                  key={g.id}
-                  onClick={() => { closeAll(); router.push(`/g/${g.id}`); }}
-                  className="w-full text-left px-4 py-2.5 text-cream/70 text-sm
-                             hover:bg-white/5 hover:text-cream transition-colors truncate"
-                >
-                  {g.name}
-                </button>
+                confirmingForget === g.id ? (
+                  <div key={g.id} className="px-4 py-2.5 flex items-center gap-2">
+                    <span className="text-cream/70 text-xs flex-1">Forget "{g.name}"?</span>
+                    <button
+                      onClick={() => handleForgetConfirmed(g.id)}
+                      className="text-danger-bright text-xs hover:text-danger-bright/80 transition-colors"
+                    >
+                      Forget
+                    </button>
+                    <span className="text-cream/30 text-xs">·</span>
+                    <button
+                      onClick={() => setConfirmingForget(null)}
+                      className="text-cream/60 text-xs hover:text-cream transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div key={g.id} className="flex items-center hover:bg-white/5 transition-colors">
+                    <button
+                      onClick={() => { closeAll(); router.push(`/g/${g.id}`); }}
+                      className="flex-1 text-left px-4 py-2.5 text-cream/70 text-sm
+                                 hover:text-cream transition-colors truncate"
+                    >
+                      {g.name}
+                    </button>
+                    <button
+                      onClick={() => setConfirmingForget(g.id)}
+                      className="pr-4 text-cream/30 hover:text-cream/70 transition-colors text-base leading-none flex-shrink-0"
+                      aria-label={`Forget ${g.name}`}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )
               ))}
             </div>
           )}

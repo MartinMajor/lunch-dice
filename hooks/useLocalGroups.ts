@@ -43,12 +43,18 @@ export function useLocalGroups() {
     setGroups(updated);
   }, []);
 
+  const removeGroup = useCallback((id: string) => {
+    const updated = readGroups().filter((g) => g.id !== id);
+    writeGroups(updated);
+    setGroups(updated);
+  }, []);
+
   const getLastGroup = useCallback((): LocalGroup | null => {
     const all = readGroups().sort(byLastVisited);
     return all[0] ?? null;
   }, []);
 
-  return { groups, addGroup, getLastGroup };
+  return { groups, addGroup, removeGroup, getLastGroup };
 }
 
 function byLastVisited(a: LocalGroup, b: LocalGroup): number {
