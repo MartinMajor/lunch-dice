@@ -133,51 +133,58 @@ export default function GameClient({ group, initialRoster }: Props) {
       <div className="min-h-screen flex flex-col">
         <Header groupId={group.id} groupName={group.name} />
 
-        <main className="flex-1 flex flex-col p-4 gap-6 max-w-2xl mx-auto w-full">
-          <h2 className="font-display text-gold/70 tracking-widest text-xs text-center pt-2">
-            TODAY'S LUNCH
-          </h2>
+        <main className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
+          {/* Scrollable player area */}
+          <div className="flex-1 overflow-y-auto p-4 pb-2 flex flex-col gap-6">
+            <h2 className="font-display text-gold/70 tracking-widest text-xs text-center pt-2">
+              TODAY'S LUNCH
+            </h2>
 
-          {sessionPlayers.length > 0 && (
-            <div className="grid grid-cols-2 gap-3">
-              {sessionPlayers.map((player, i) => (
-                <PlayerCard
-                  key={player.playerId}
-                  name={player.name}
-                  price={player.price}
-                  probability={probabilities[i]}
-                  onPriceChange={(v) => updatePrice(player.playerId, v)}
-                  onRemove={() => removeFromSession(player.playerId)}
-                />
-              ))}
-            </div>
-          )}
+            {sessionPlayers.length > 0 && (
+              <div className="grid grid-cols-2 gap-3">
+                {sessionPlayers.map((player, i) => (
+                  <PlayerCard
+                    key={player.playerId}
+                    name={player.name}
+                    price={player.price}
+                    probability={probabilities[i]}
+                    onPriceChange={(v) => updatePrice(player.playerId, v)}
+                    onRemove={() => removeFromSession(player.playerId)}
+                  />
+                ))}
+              </div>
+            )}
 
-          {sessionPlayers.length === 0 && (
-            <div className="flex-1 flex flex-col items-center justify-center gap-2 py-16">
-              <p className="text-4xl opacity-20">🎲</p>
-              <p className="text-cream/30 text-sm">No players yet</p>
-            </div>
-          )}
+            {sessionPlayers.length === 0 && (
+              <div className="flex-1 flex flex-col items-center justify-center gap-2 py-16">
+                <p className="text-4xl opacity-20">🎲</p>
+                <p className="text-cream/30 text-sm">No players yet</p>
+              </div>
+            )}
+          </div>
 
-          <button
-            onClick={() => setShowPicker(true)}
-            className="w-full border border-dashed border-gold/20 text-cream/40
-                       hover:border-gold/40 hover:text-cream/70
-                       rounded-lg py-3 text-sm transition-colors"
-          >
-            + Add player
-          </button>
+          {/* Sticky bottom bar */}
+          <div className="p-4 pt-2 flex flex-col gap-3 border-t border-gold/10">
+            <button
+              onClick={() => setShowPicker(true)}
+              className="w-full border border-dashed border-gold/20 text-cream/40
+                         hover:border-gold/40 hover:text-cream/70
+                         rounded-lg py-3 text-sm transition-colors"
+            >
+              + Add player
+            </button>
 
-          {canStart && (
             <button
               onClick={() => setPhase("rolling")}
+              disabled={!canStart}
               className="w-full bg-gold text-casino-black font-display tracking-widest
-                         text-sm py-4 rounded-lg transition-colors hover:bg-gold-light"
+                         text-sm py-4 rounded-lg transition-colors
+                         hover:bg-gold-light
+                         disabled:opacity-30 disabled:cursor-not-allowed"
             >
               START ROLLING 🎲
             </button>
-          )}
+          </div>
         </main>
 
         {showPicker && (
