@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocalGroups } from "@/hooks/useLocalGroups";
 
@@ -21,6 +22,7 @@ export default function GroupSwitcher({ currentGroupId, currentGroupName }: Prop
   const [creating, setCreating] = useState(false);
   const [joinInput, setJoinInput] = useState("");
   const [joinError, setJoinError] = useState("");
+  const [copied, setCopied] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const newNameRef = useRef<HTMLInputElement>(null);
   const joinInputRef = useRef<HTMLInputElement>(null);
@@ -47,6 +49,24 @@ export default function GroupSwitcher({ currentGroupId, currentGroupName }: Prop
     setNewNameError("");
     setJoinInput("");
     setJoinError("");
+  }
+
+  async function handleCopyLink() {
+    const url = `${window.location.origin}/g/${currentGroupId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      const input = document.createElement("input");
+      input.value = url;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   }
 
   async function handleCreate(e: React.FormEvent) {
@@ -143,7 +163,14 @@ export default function GroupSwitcher({ currentGroupId, currentGroupName }: Prop
 
           {/* Actions */}
           {mode === "idle" && (
-            <div>
+            <div className="border-b border-gold/10">
+              <button
+                onClick={handleCopyLink}
+                className="w-full text-left px-4 py-2.5 text-cream/70 text-sm
+                           hover:bg-white/5 hover:text-cream transition-colors"
+              >
+                {copied ? "✓ Copied!" : "⬡ Copy link"}
+              </button>
               <button
                 onClick={() => setMode("creating")}
                 className="w-full text-left px-4 py-2.5 text-cream/70 text-sm
@@ -162,7 +189,7 @@ export default function GroupSwitcher({ currentGroupId, currentGroupName }: Prop
           )}
 
           {mode === "creating" && (
-            <form onSubmit={handleCreate} className="p-3 flex flex-col gap-2">
+            <form onSubmit={handleCreate} className="p-3 flex flex-col gap-2 border-b border-gold/10">
               <input
                 ref={newNameRef}
                 type="text"
@@ -198,7 +225,7 @@ export default function GroupSwitcher({ currentGroupId, currentGroupName }: Prop
           )}
 
           {mode === "joining" && (
-            <form onSubmit={handleJoin} className="p-3 flex flex-col gap-2">
+            <form onSubmit={handleJoin} className="p-3 flex flex-col gap-2 border-b border-gold/10">
               <input
                 ref={joinInputRef}
                 type="text"
@@ -229,6 +256,27 @@ export default function GroupSwitcher({ currentGroupId, currentGroupName }: Prop
               </div>
             </form>
           )}
+
+          {/* Static bottom links */}
+          <div>
+            <Link
+              href={`/g/${currentGroupId}/history`}
+              onClick={closeAll}
+              className="block px-4 py-2.5 text-cream/70 text-sm
+                         hover:bg-white/5 hover:text-cream transition-colors"
+            >
+              History
+            </Link>
+            <a
+              href="https://github.com/MartinMajor/lunch-dice"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block px-4 py-2.5 text-cream/70 text-sm
+                         hover:bg-white/5 hover:text-cream transition-colors"
+            >
+              GitHub
+            </a>
+          </div>
         </div>
       )}
     </div>

@@ -35,10 +35,6 @@ export default function RollingPhase({
 
       <main className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
         <div className="flex-1 overflow-y-auto p-4 pb-2 flex flex-col gap-6">
-          <h2 className="font-display text-gold/70 tracking-widest text-xs text-center pt-2">
-            ROLL YOUR DICE
-          </h2>
-
           <div className="grid grid-cols-2 gap-3">
             {sessionPlayers.map((player) => (
               <RollingCard

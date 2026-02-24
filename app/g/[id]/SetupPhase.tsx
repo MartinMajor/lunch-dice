@@ -60,11 +60,7 @@ export default function SetupPhase({
       <main className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
         {/* Scrollable roster area */}
         <div className="flex-1 overflow-y-auto p-4 pb-2 flex flex-col gap-6">
-          <h2 className="font-display text-gold/70 tracking-widest text-xs text-center pt-2">
-            TODAY'S LUNCH
-          </h2>
-
-            {/* Selected players — full-width rows */}
+          {/* Selected players — full-width rows */}
           {sessionPlayers.length > 0 && (
             <div className="flex flex-col gap-2">
               {sessionPlayers.map((sp, i) => (

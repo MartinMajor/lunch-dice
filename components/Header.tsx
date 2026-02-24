@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
 import GroupSwitcher from "./GroupSwitcher";
 
 interface Props {
@@ -10,47 +8,9 @@ interface Props {
 }
 
 export default function Header({ groupId, groupName }: Props) {
-  const [copied, setCopied] = useState(false);
-
-  async function handleShare() {
-    const url = `${window.location.origin}/g/${groupId}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // fallback: select and copy
-      const input = document.createElement("input");
-      input.value = url;
-      document.body.appendChild(input);
-      input.select();
-      document.execCommand("copy");
-      document.body.removeChild(input);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  }
-
   return (
     <header className="border-b border-gold/20 px-4 py-3 flex items-center justify-between">
-      {/* Left: Share + History */}
-      <div className="flex items-center gap-3">
-        <button
-          onClick={handleShare}
-          className="text-xs text-cream/70 hover:text-cream transition-colors
-                     flex items-center gap-1.5"
-        >
-          <span>{copied ? "✓ Copied" : "⬡ Share"}</span>
-        </button>
-        <Link
-          href={`/g/${groupId}/history`}
-          className="text-xs text-cream/60 hover:text-cream transition-colors"
-        >
-          History
-        </Link>
-      </div>
-
-      {/* Right: Group switcher */}
+      <span className="font-display text-gold text-sm tracking-wider">Lunch Dice</span>
       <GroupSwitcher currentGroupId={groupId} currentGroupName={groupName} />
     </header>
   );
