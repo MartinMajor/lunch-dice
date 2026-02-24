@@ -326,6 +326,14 @@ export default function GroupSwitcher({ currentGroupId, currentGroupName }: Prop
           {/* Static bottom links */}
           <div>
             <Link
+              href={`/g/${currentGroupId}/stats`}
+              onClick={closeAll}
+              className="block px-4 py-2.5 text-cream/70 text-sm
+                         hover:bg-white/5 hover:text-cream transition-colors"
+            >
+              Stats
+            </Link>
+            <Link
               href={`/g/${currentGroupId}/history`}
               onClick={closeAll}
               className="block px-4 py-2.5 text-cream/70 text-sm
