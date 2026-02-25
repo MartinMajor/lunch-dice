@@ -33,8 +33,8 @@ export default function RollingPhase({
     <div className="min-h-screen flex flex-col">
       <Header groupId={group.id} groupName={group.name} />
 
-      <main className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
-        <div className="flex-1 overflow-y-auto p-4 pb-2 flex flex-col gap-6">
+      <main className="max-w-2xl mx-auto w-full">
+        <div className="p-4 pb-2 flex flex-col gap-6">
           <div className="grid grid-cols-2 gap-3">
             {sessionPlayers.map((player) => (
               <RollingCard

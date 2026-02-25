@@ -57,9 +57,9 @@ export default function SetupPhase({
     <div className="min-h-screen flex flex-col">
       <Header groupId={group.id} groupName={group.name} />
 
-      <main className="flex-1 flex flex-col max-w-2xl mx-auto w-full">
-        {/* Scrollable roster area */}
-        <div className="flex-1 overflow-y-auto p-4 pb-2 flex flex-col gap-6">
+      <main className="max-w-2xl mx-auto w-full">
+        {/* Roster area */}
+        <div className="p-4 pb-2 flex flex-col gap-6">
           {/* Selected players — full-width rows */}
           {sessionPlayers.length > 0 && (
             <div className="flex flex-col gap-2">
