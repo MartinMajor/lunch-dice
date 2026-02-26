@@ -231,3 +231,7 @@ interface LocalGroup {
 6. **Roster-first setup** — the full roster is shown upfront; users tap to select, not search/add. Selected players move to a full-width stack at top; unselected stay in a 2-col ghost grid below.
 
 7. **Stats computed at read time** — no pre-aggregated stats columns in the DB. All balance/streak/etc values are derived from raw `session_players` rows in the stats page server component. Keeps the write path simple and stats always consistent.
+
+8. **Nothing fixed to the bottom of the viewport** — Brave on mobile renders a browser toolbar that permanently overlaps the bottom portion of the page. Any element with `position: fixed; bottom: 0` (or Tailwind's `fixed bottom-0`) will be hidden behind this toolbar and unreachable. All action buttons and bottom bars must flow naturally with the document so they are always above the fold and tappable.
+
+9. **Input font size must be ≥ 16px** — iOS Safari auto-zooms the entire page when a focused input has `font-size < 16px`. This causes a horizontal scroll that looks like a layout bug. All `<input>` elements must use at least `text-base` (16px). Never use `text-sm` or `text-xs` on an input. If an input looks too large inside a compact container (e.g. a dropdown menu), move the form to a modal instead.

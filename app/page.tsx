@@ -100,7 +100,7 @@ export default function Home() {
               placeholder="e.g. Office Crew"
               maxLength={50}
               className="bg-felt border border-gold/30 text-cream placeholder-cream/40
-                         rounded px-4 py-3 text-sm outline-none
+                         rounded px-4 py-3 text-base outline-none
                          focus:border-gold/70 focus:shadow-gold transition-all"
             />
           </div>
