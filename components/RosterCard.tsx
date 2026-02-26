@@ -53,7 +53,7 @@ export default function RosterCard({
           value={price}
           onChange={(e) => onPriceChange?.(e.target.value)}
           autoFocus
-          className="w-20 bg-transparent text-cream text-sm outline-none text-right
+          className="w-20 bg-transparent text-cream text-base outline-none text-right
                      placeholder:text-cream/40
                      [appearance:textfield]
                      [&::-webkit-outer-spin-button]:appearance-none

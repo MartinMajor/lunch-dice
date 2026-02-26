@@ -109,7 +109,7 @@ export default function SetupPhase({
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   onKeyDown={handleNewKeyDown}
-                  className="bg-transparent text-cream text-sm outline-none
+                  className="bg-transparent text-cream text-base outline-none
                              placeholder:text-cream/50 font-display w-full"
                 />
                 <div className="flex gap-2">
