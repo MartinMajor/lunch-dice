@@ -1,31 +1,33 @@
 {
-  "name": "lunch-dice",
+  "name": "lunch-dice-v3",
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "dev": "next dev --webpack",
     "build": "next build",
-    "dev": "next dev",
-    "format-and-lint": "biome lint ./src --error-on-warnings",
-    "format-and-lint:apply": "biome lint ./src --write --error-on-warnings",
-    "lint": "next lint",
     "start": "next start",
-    "validate": "tsc --noEmit"
+    "lint": "next lint",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "next": "14.2.4",
-    "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "@neondatabase/serverless": "^1.0.0",
+    "drizzle-orm": "^0.45.0",
+    "framer-motion": "^12.0.0",
+    "nanoid": "^5.0.0",
+    "next": "^16.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@biomejs/biome": "1.8.3",
-    "@types/node": "20.14.10",
-    "@types/react": "18.3.3",
-    "@types/react-dom": "18.3.0",
-    "autoprefixer": "10.4.19",
-    "mini-css-extract-plugin": "2.9.0",
-    "postcss": "8.4.39",
-    "tailwindcss": "3.4.4",
-    "typescript": "5.5.3"
-  },
-  "packageManager": "pnpm@9.5.0"
+    "@types/node": "^25.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.0.0",
+    "dotenv": "^17.3.1",
+    "drizzle-kit": "^0.31.0",
+    "postcss": "^8.0.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.0.0"
+  }
 }

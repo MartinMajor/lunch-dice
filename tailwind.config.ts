@@ -1,24 +1,34 @@
-import type { Config } from 'tailwindcss'
+import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
-      backgroundImage: {
-        'dice': "url('/dice.gif')",
-        'plate': "url('/plate.png')",
-        'online': "url('/online.svg')",
-        'offline': "url('/offline.svg')",
+      colors: {
+        "casino-black": "#0a0a0f",
+        "felt": "#1a2e1a",
+        "gold": "#c9a84c",
+        "gold-light": "#e8c96a",
+        "cream": "#f5f0e8",
+        "danger": "#8b1a1a",
+        "danger-bright": "#cc2222",
+        "safe": "#4a8a4a",
       },
-      animation: {
-        'spin-slow': 'spin 2s linear infinite',
+      fontFamily: {
+        display: ["var(--font-cinzel)", "serif"],
+        sans: ["var(--font-inter)", "sans-serif"],
+      },
+      boxShadow: {
+        "gold": "0 0 20px rgba(201, 168, 76, 0.4)",
+        "danger": "0 0 20px rgba(204, 34, 34, 0.6)",
+        "safe": "0 0 15px rgba(74, 138, 74, 0.3)",
       },
     },
   },
   plugins: [],
-}
-export default config
+};
+
+export default config;
